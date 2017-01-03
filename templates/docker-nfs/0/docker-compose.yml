@@ -1,0 +1,11 @@
+docker-nfs:
+  image: cpuguy83/nfs-server
+  labels:
+    io.rancher.container.network: true
+  privileged: true
+  volumes:
+  - /exports
+  - /etc/services:/etc/services
+  command:
+  - /exports
+

@@ -1,0 +1,195 @@
+version: '2'
+services:
+  elasticsearch-masters:
+    image: sfroment/elasticsearch-conf
+    labels:
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.pull_image: always
+      io.rancher.sidekicks: elasticsearch-base-master,elasticsearch-datavolume-masters
+    volume_driver: rancher-nfs
+    volumes:
+      - x-pack:/usr/share/elasticsearch/config/x-pack
+    volumes_from:
+      - elasticsearch-datavolume-masters
+  elasticsearch-datavolume-masters:
+    labels:
+      elasticsearch.datanode.config.version: '0'
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.start_once: true
+    volumes:
+      - /data/confd
+      - /usr/share/elasticsearch/config 
+      - /opt/rancher/bin
+    entrypoint: /bin/true
+    image: elasticsearch:5.1.2
+  elasticsearch-base-master:
+    labels:
+      elasticsearch.master.config.version: '0'
+      io.rancher.container.hostname_override: container_name
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    mem_limit: 1000000000
+    volume_driver: rancher-nfs
+    volumes:
+      - x-pack:/usr/share/elasticsearch/config/x-pack
+    volumes_from:
+      - elasticsearch-datavolume-masters
+    cap_add:
+      - IPC_LOCK
+    environment: 
+      - master=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Des.path.conf=/usr/share/elasticsearch/config"
+    image: elasticsearch:5.1.2
+    network_mode: "container:elasticsearch-masters"
+    entrypoint: /opt/rancher/bin/run.sh
+
+  elasticsearch-datanodes:
+    image: sfroment/elasticsearch-conf
+    labels:
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.pull_image: always
+      io.rancher.sidekicks: elasticsearch-base-datanode,elasticsearch-datavolume-datanode
+      io.rancher.scheduler.affinity:container_label_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+    links:
+      - elasticsearch-masters:es-masters
+    volume_driver: rancher-nfs
+    volumes:
+      - x-pack:/usr/share/elasticsearch/config/x-pack
+    volumes_from:
+      - elasticsearch-datavolume-datanode
+  elasticsearch-datavolume-datanode:
+    labels:
+      elasticsearch.datanode.config.version: '0'
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.start_once: true
+    volumes:
+      - /data/confd
+      - /usr/share/elasticsearch/config
+      - /opt/rancher/bin
+    entrypoint: /bin/true
+    image: elasticsearch:5.1.2
+  elasticsearch-base-datanode:
+    labels:
+      elasticsearch.datanode.config.version: '0'
+      io.rancher.container.hostname_override: container_name
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    mem_limit: 1000000000
+    image: elasticsearch:5.1.2
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Des.path.conf=/usr/share/elasticsearch/config"
+    links:
+      - elasticsearch-masters:es-masters
+    entrypoint:
+      - /opt/rancher/bin/run.sh
+    volume_driver: rancher-nfs
+    volumes:
+      - x-pack:/usr/share/elasticsearch/config/x-pack
+    volumes_from:
+      - elasticsearch-datavolume-datanode
+    network_mode: "container:elasticsearch-datanodes"
+
+  elasticsearch-clients:
+    image: sfroment/elasticsearch-conf
+    labels:
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.pull_image: always
+      io.rancher.sidekicks: elasticsearch-base-clients,elasticsearch-datavolume-clients
+    links:
+      - elasticsearch-masters:es-masters
+    volumes_from:
+      - elasticsearch-datavolume-clients
+  elasticsearch-datavolume-clients:
+    labels:
+      elasticsearch.datanode.config.version: '0'
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.start_once: true
+    volumes:
+      - /data/confd
+      - /usr/share/elasticsearch/config
+      - /opt/rancher/bin
+    entrypoint: /bin/true
+    image: elasticsearch:5.1.2
+  elasticsearch-base-clients:
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    mem_limit: 1000000000
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Des.path.conf=/usr/share/elasticsearch/config"
+    labels:
+      elasticsearch.client.config.version: '0'
+      io.rancher.container.hostname_override: container_name
+    image: elasticsearch:5.1.2
+    volume_driver: rancher-nfs
+    volumes:
+      - x-pack:/usr/share/elasticsearch/config/x-pack
+    volumes_from:
+      - elasticsearch-datavolume-clients
+    network_mode: "container:elasticsearch-clients"
+    entrypoint:
+      - /opt/rancher/bin/run.sh
+
+  elasticsearch-clientslb:
+    ports:
+    - 80
+    image: rancher/lb-service-haproxy:v0.5.5
+
+  kibana5:
+    image: sfroment/kibana-conf
+    labels:
+      io.rancher.sidekicks: kibana5-base,kibana5-datavolume
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.pull_image: always
+    volumes_from:
+      - kibana5-datavolume
+    volume_driver: rancher-nfs
+    volumes:
+      - x-pack:/usr/share/elasticsearch/config/x-pack
+    links:
+      - elasticsearch-clients:elasticsearch
+  kibana5-datavolume:
+    labels:
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.start_once: true
+    volumes:
+      - /data/confd
+      - /usr/share/kibana/config
+      - /opt/rancher/bin
+    entrypoint: /bin/true
+    image: kibana:5.1.2
+  kibana5-base:
+    restart: always
+    image: kibana:5.1.2
+    network_mode: "container:kibana5"
+    environment:
+      ELASTICSEARCH_URL: "http://elasticsearch:9200"
+    labels:
+      io.rancher.container.hostname_override: container_name
+    volumes_from:
+      - kibana5-datavolume
+    volume_driver: rancher-nfs
+    volumes:
+      - x-pack:/usr/share/elasticsearch/config/x-pack
+    entrypoint:
+      - /opt/rancher/bin/run.sh
+    links:
+      - elasticsearch-clients:elasticsearch
+  kibana5-lb:
+    ports:
+    - 80
+    image: rancher/lb-service-haproxy:v0.5.5
