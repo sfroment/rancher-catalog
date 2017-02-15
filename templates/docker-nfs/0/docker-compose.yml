@@ -2,6 +2,7 @@ docker-nfs:
   image: cpuguy83/nfs-server
   labels:
     io.rancher.container.network: true
+    io.rancher.scheduler.affinity:host_label: nfs=1
   privileged: true
   volumes:
   - /exports
