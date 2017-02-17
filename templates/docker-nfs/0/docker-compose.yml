@@ -5,7 +5,7 @@ docker-nfs:
     io.rancher.scheduler.affinity:host_label: nfs=1
   privileged: true
   volumes:
-  - /exports
+  - /exports:/exports
   - /etc/services:/etc/services
   command:
   - /exports
