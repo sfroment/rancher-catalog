@@ -31,9 +31,8 @@ services:
         soft: -1
         hard: -1
       nofile:
-        soft: 65536
-        hard: 65536
-    mem_limit: 1000000000
+        soft: 262144
+        hard: 262144
     volume_driver: rancher-nfs
     volumes:
       - x-packk:/usr/share/elasticsearch/config/x-pack
@@ -43,7 +42,7 @@ services:
       - IPC_LOCK
     environment: 
       - master=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Des.path.conf=/usr/share/elasticsearch/config"
+      - "ES_JAVA_OPTS=-Des.path.conf=/usr/share/elasticsearch/config"
     image: elasticsearch:5.1.2
     network_mode: "container:elasticsearch-masters"
     entrypoint: /opt/rancher/bin/run.sh
@@ -82,12 +81,11 @@ services:
         soft: -1
         hard: -1
       nofile:
-        soft: 65536
-        hard: 65536
-    mem_limit: 1000000000
+        soft: 262144
+        hard: 262144
     image: elasticsearch:5.1.2
     environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Des.path.conf=/usr/share/elasticsearch/config"
+      - "ES_JAVA_OPTS=-Des.path.conf=/usr/share/elasticsearch/config"
     links:
       - elasticsearch-masters:es-masters
     entrypoint:
@@ -126,11 +124,10 @@ services:
         soft: -1
         hard: -1
       nofile:
-        soft: 65536
-        hard: 65536
-    mem_limit: 1000000000
+        soft: 262144
+        hard: 262144
     environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Des.path.conf=/usr/share/elasticsearch/config"
+      - "ES_JAVA_OPTS=-Des.path.conf=/usr/share/elasticsearch/config"
     labels:
       elasticsearch.client.config.version: '0'
       io.rancher.container.hostname_override: container_name
