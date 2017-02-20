@@ -9,9 +9,15 @@
       type: "string"
       required: true
       default: "es"
-    - variable: "lb_port"
-      label: "Public Port"
-      description: "Unique public port for lb"
+    - variable: "klb_port"
+      label: "Kibana Port"
+      description: "Unique public port for kibana lb"
+      type: "int"
+      default: 80
+      required: true
+    - variable: "elb_port"
+      label: "ES Port"
+      description: "Unique public port for es lb"
       type: "int"
       default: 80
       required: true
@@ -66,13 +72,13 @@ elasticsearch-clientslb:
   scale: 1
   lb_config:
     port_rules:
-    - source_port: 80
+    - source_port: ${elb_port}
       target_port: 9200
       service: elasticsearch-clients
 kibana5-lb:
   scale: 1
   lb_config:
     port_rules:
-    - source_port: 80
+    - source_port: ${klb_port}
       target_port: 5601
       service: kibana5
