@@ -143,8 +143,9 @@ services:
 
   elasticsearch-clientslb:
     ports:
-    - 80
-    image: rancher/lb-service-haproxy:v0.5.5
+    - ${elb_port}:${elb_port}
+    - ${klb_port}:${klb_port}
+    image: rancher/lb-service-haproxy:v0.5.9
 
   kibana5:
     image: sfroment/kibana-conf
@@ -186,7 +187,3 @@ services:
       - /opt/rancher/bin/run.sh
     links:
       - elasticsearch-clients:elasticsearch
-  kibana5-lb:
-    ports:
-    - 80
-    image: rancher/lb-service-haproxy:v0.5.5

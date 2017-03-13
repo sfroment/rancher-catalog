@@ -21,6 +21,18 @@
       type: "int"
       default: 80
       required: true
+    - variable: "klb_hostname"
+      label: "Kibana hostname"
+      description: "Unique public hostname for kibana lb"
+      type: "int"
+      default: 80
+      required: true
+    - variable: "elb_hostname"
+      label: "ES hostname"
+      description: "Unique public hostname for es lb"
+      type: "int"
+      default: 80
+      required: true
     - variable: es_passwd
       description: "Elasticsearch user password"
       label: "Elasticsearch Password"
@@ -31,6 +43,11 @@
       label: "Kibana Password"
       type: "string"
       required: true
+    - variable: round_robin
+      description: "Your host round robin dns required"
+      label: "rrdns stack/service"
+      required: false
+      type: "service"
 elasticsearch-masters:
   metadata:
     post-run:
@@ -69,16 +86,13 @@ kibana5:
       yml:
        kibana: "${kibana_passwd}"
 elasticsearch-clientslb:
-  scale: 1
   lb_config:
     port_rules:
-    - source_port: ${elb_port}
+    - hostname: ${elb_hostname}
+      source_port: ${elb_port}
       target_port: 9200
       service: elasticsearch-clients
-kibana5-lb:
-  scale: 1
-  lb_config:
-    port_rules:
-    - source_port: ${klb_port}
+    - hostname: ${klb_hostname}
+      source_port: ${klb_port}
       target_port: 5601
       service: kibana5
