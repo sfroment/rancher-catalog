@@ -1,0 +1,84 @@
+.catalog:
+  name: "Elasticsearch"
+  version: "5.2.2-rancher1"
+  description: "Elasticsearch. You know, for search"
+  questions:
+    - variable: cluster_name
+      description: "Unique name to assign to your Elasticsearch cluster."
+      label: "Cluster Name"
+      type: "string"
+      required: true
+      default: "es"
+    - variable: "klb_port"
+      label: "Kibana Port"
+      description: "Unique public port for kibana lb"
+      type: "int"
+      default: 80
+      required: true
+    - variable: "elb_port"
+      label: "ES Port"
+      description: "Unique public port for es lb"
+      type: "int"
+      default: 80
+      required: true
+    - variable: es_passwd
+      description: "Elasticsearch user password"
+      label: "Elasticsearch Password"
+      type: "string"
+      required: true
+    - variable: kibana_passwd
+      description: "Kibana user password"
+      label: "Kibana Password"
+      type: "string"
+      required: true
+elasticsearch-masters:
+  metadata:
+    post-run:
+      sh:
+        elasticsearch: "${es_passwd}"
+        kibana: "${kibana_passwd}"
+    elasticsearch:
+      yml:
+        cluster.name: "${cluster_name}"
+        node.name: "$${HOSTNAME}"
+        node.data: "false"
+        node.master: "true"
+        network.host: "_site_"
+elasticsearch-datanodes:
+  metadata:
+    elasticsearch:
+      yml:
+        cluster.name: "${cluster_name}"
+        node.name: "$${HOSTNAME}"
+        node.data: "true"
+        node.master: "false"
+        http.enabled: "false"
+        network.host: "_site_"
+elasticsearch-clients:
+  metadata:
+    elasticsearch:
+      yml:
+       cluster.name: "${cluster_name}"
+       node.name: "$${HOSTNAME}"
+       node.data: "false"
+       node.master: "true"
+       network.host: "_site_"
+kibana5:
+  metadata:
+    kibana:
+      yml:
+       kibana: "${kibana_passwd}"
+elasticsearch-clientslb:
+  scale: 1
+  lb_config:
+    port_rules:
+    - source_port: ${elb_port}
+      target_port: 9200
+      service: elasticsearch-clients
+kibana5-lb:
+  scale: 1
+  lb_config:
+    port_rules:
+    - source_port: ${klb_port}
+      target_port: 5601
+      service: kibana5
