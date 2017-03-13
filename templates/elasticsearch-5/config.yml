@@ -2,4 +2,4 @@ name: ELK 5.x
 description: |
   Elasticsearch, kibana you know for search!
 category: ELK
-version: 5.1.2-rancher1
+version: 5.2.2-rancher1

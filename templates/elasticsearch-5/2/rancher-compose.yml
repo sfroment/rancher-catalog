@@ -24,14 +24,14 @@
     - variable: "klb_hostname"
       label: "Kibana hostname"
       description: "Unique public hostname for kibana lb"
-      type: "int"
-      default: 80
+      type: "string"
+      default: ""
       required: true
     - variable: "elb_hostname"
       label: "ES hostname"
       description: "Unique public hostname for es lb"
-      type: "int"
-      default: 80
+      type: "string"
+      default: ""
       required: true
     - variable: es_passwd
       description: "Elasticsearch user password"
