@@ -21,7 +21,7 @@ services:
       - /usr/share/elasticsearch/config 
       - /opt/rancher/bin
     entrypoint: /bin/true
-    image: elasticsearch:5.1.2
+    image: elasticsearch:5.2.2
   elasticsearch-base-master:
     labels:
       elasticsearch.master.config.version: '0'
@@ -43,7 +43,7 @@ services:
     environment: 
       - master=true
       - "ES_JAVA_OPTS=-Des.path.conf=/usr/share/elasticsearch/config"
-    image: elasticsearch:5.1.2
+    image: elasticsearch:5.2.2
     network_mode: "container:elasticsearch-masters"
     entrypoint: /opt/rancher/bin/run.sh
 
@@ -71,7 +71,7 @@ services:
       - /usr/share/elasticsearch/config
       - /opt/rancher/bin
     entrypoint: /bin/true
-    image: elasticsearch:5.1.2
+    image: elasticsearch:5.2.2
   elasticsearch-base-datanode:
     labels:
       elasticsearch.datanode.config.version: '0'
@@ -83,7 +83,7 @@ services:
       nofile:
         soft: 262144
         hard: 262144
-    image: elasticsearch:5.1.2
+    image: elasticsearch:5.2.2
     environment:
       - "ES_JAVA_OPTS=-Des.path.conf=/usr/share/elasticsearch/config"
     links:
@@ -117,7 +117,7 @@ services:
       - /usr/share/elasticsearch/config
       - /opt/rancher/bin
     entrypoint: /bin/true
-    image: elasticsearch:5.1.2
+    image: elasticsearch:5.2.2
   elasticsearch-base-clients:
     ulimits:
       memlock:
@@ -131,7 +131,7 @@ services:
     labels:
       elasticsearch.client.config.version: '0'
       io.rancher.container.hostname_override: container_name
-    image: elasticsearch:5.1.2
+    image: elasticsearch:5.2.2
     volume_driver: rancher-nfs
     volumes:
       - x-packk:/usr/share/elasticsearch/config/x-pack
@@ -142,6 +142,8 @@ services:
       - /opt/rancher/bin/run.sh
 
   elasticsearch-clientslb:
+    labels:
+      io.rancher.scheduler.global: 'true'
     ports:
     - ${elb_port}:${elb_port}
     - ${klb_port}:${klb_port}
@@ -169,10 +171,10 @@ services:
       - /usr/share/kibana/config
       - /opt/rancher/bin
     entrypoint: /bin/true
-    image: kibana:5.1.2
+    image: kibana:5.2.2
   kibana5-base:
     restart: always
-    image: kibana:5.1.2
+    image: kibana:5.2.2
     network_mode: "container:kibana5"
     environment:
       ELASTICSEARCH_URL: "http://elasticsearch:9200"

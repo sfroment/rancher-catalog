@@ -31,7 +31,7 @@
       label: "ES hostname"
       description: "Unique public hostname for es lb"
       type: "string"
-      default: ""
+      default: "" 
       required: true
     - variable: es_passwd
       description: "Elasticsearch user password"
@@ -43,11 +43,6 @@
       label: "Kibana Password"
       type: "string"
       required: true
-    - variable: round_robin
-      description: "Your host round robin dns required"
-      label: "rrdns stack/service"
-      required: false
-      type: "service"
 elasticsearch-masters:
   metadata:
     post-run:
